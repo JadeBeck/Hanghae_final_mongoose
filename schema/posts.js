@@ -4,17 +4,18 @@ const PostsSchema = new mongoose.Schema({
   userId: {
     type: String,
   },
-  nickname: {
+  nickName: {
     type: String,
   },
   title: {
-    type: String
+    type: String,
+    index: true
   },
   content: {
     type: String
   },
   location: {
-    type: String
+    type: Object, String,
   },
   cafe: {
     type: String
@@ -23,7 +24,7 @@ const PostsSchema = new mongoose.Schema({
     type: String
   },
   time: {
-    type : String
+    type : Array
   },
   map : {
     type : String
@@ -31,13 +32,28 @@ const PostsSchema = new mongoose.Schema({
   partyMember : {
     type : Number
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+  participant : {
+    type : Array
   },
-  updatedAt: { 
-    type: Date, 
-    default: Date.now 
+  banUser : {
+    type : Array
+  },
+  closed : {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  },
+  expireAt: {
+    type: Date,
+    default: Date.now,
+    expires: 0
   },
 });
 

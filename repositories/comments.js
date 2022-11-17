@@ -4,7 +4,6 @@ const Posts = require('../schema/posts');
 class CommentsRepository {
     //댓글 전체 목록 보기
     findAllComments = async (postId) => {
-        console.log(postId)
         const allCommentsData = await Comments.find({postId}).sort({updatedAt: -1});
         return allCommentsData;
     };
@@ -17,15 +16,14 @@ class CommentsRepository {
 
     //게시글 존재 여부 확인
     findOnePost = async (postId) => {
-        // console.log(postId)
-        const findOnePostResult = await Posts.findOne({_id: postId.postId});
-        // console.log(findOnePostResult)
-        return findOnePostResult
+        const findOnePostResult = await Posts.findOne({_id: postId});
+        return findOnePostResult;
     }
 
     //신규 댓글
-    createComment = async (postId, userId, nickname, comment) => {
-        const createCommentData = await Comments.create({postId, userId, nickname, comment});
+    createComment = async (postId, userId, nickName, comment) => {
+        const createCommentData = await Comments.create({ postId, userId, nickName, comment });
+        await Posts.updateOne( { _id: postId},{ $push:{participant: nickName}} );
         return createCommentData;
     };
 
@@ -35,21 +33,21 @@ class CommentsRepository {
         return findOneComment;
     }
 
-    //본인의 댓글 맞는지 확인하기 for delete
+    //댓글 수정
+    updateComment = async (userId, commentId, comment) => {
+        const updatedCommentData = await Comments.updateOne({userId,  _id: commentId}, {$set: {comment}});
+        return updatedCommentData;
+    };
+
+    //댓글 존재 여부 확인하기 for delete
     findOneCommentforDelete = async (commentId) => {
         const findOneComment = await Comments.findOne({ _id: commentId.commentId });
         return findOneComment;
     }
 
-    //댓글 수정
-    updateComment = async (userId, commentId, comment) => {
-        const updatedCommentData = await Comments.updateOne({userId, commentId}, {$set: {comment}});
-        return updatedCommentData;
-    };
-
-    //댓글 삭제
-    deleteComment = async (userId, commentId) => {
-        const deleteCommentData = await Comments.deleteOne({userId, commentId});
+    //본인 댓글 여부 확인 후 댓글 삭제
+    deleteComment = async (commentId) => {
+        const deleteCommentData = await Comments.deleteOne({_id: commentId});
         return deleteCommentData;
     };
 }

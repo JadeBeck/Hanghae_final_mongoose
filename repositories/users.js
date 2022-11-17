@@ -1,4 +1,4 @@
-const Users  = require("../schema/users");
+const Users  = require("../schema/users");  
 const Posts = require("../schema/posts"); 
 const Comments = require("../schema/comments"); 
 
@@ -6,26 +6,30 @@ class UsersRepository {
   // 회원가입을 위한 함수
   signUp = async (
     userId,
+    img,
     nickName,
     password,
     address,
-    likePlace,
+    myPlace,
     birth,
     gender,
     likeGame,
-    salt
+    introduce,
+    admin
   ) => {
     // create로 회원가입
     const createAccountData = await Users.create({
       userId,
+      img,
       nickName,
       password,
       address,
-      likePlace,
+      myPlace,
       birth,
       gender,
       likeGame,
-      salt,
+      introduce,
+      admin
     });
     return createAccountData;
   };
@@ -75,11 +79,15 @@ class UsersRepository {
   findUserData = async (userId) => {
     const findUserData = await Users.findOne({userId:userId});
     return {
+      img : findUserData.img,
       nickName : findUserData.nickName,
       likeGame : findUserData.likeGame,
+      address : findUserData.address,
       birth : findUserData.birth,
       gender : findUserData.gender,
-      likePlace : findUserData.likePlace
+      myPlace : findUserData.myPlace,
+      introduce : findUserData.introduce,
+      visible : findUserData.visible
     };
   };
 
@@ -89,19 +97,21 @@ class UsersRepository {
     nickName,
     password,
     address,
-    likePlace,
+    myPlace,
     birth,
     gender,
-    likeGame
+    likeGame,
+    introduce
   ) => {
     const updateUserData = await Users.updateOne(
-      { userId : userId, nickName : nickName, password : password },
+      { userId : userId, nickName : nickName },
       {$set:
         {address: address,
-        likePlace: likePlace,
+        myPlace: myPlace,
         birth: birth,
         gender: gender,
-        likeGame: likeGame,}
+        likeGame: likeGame,
+        introduce : introduce}
       }
     );
     return updateUserData;
@@ -115,6 +125,40 @@ class UsersRepository {
     return deleteUserData;
   };
 
-}
+  // 회원 성별 공개 여부
+  visibleGender = async (userId) => {
+    const visibleGender = await Users.findOne({userId : userId})
+    if(visibleGender.visible) {
+      await Users.updateOne(
+        {userId : userId},
+        {$set:
+          {visible:false}
+        }
+      )
+      } else {
+        await Users.updateOne(
+          {userId : userId},
+          {$set:
+            {visible:true}
+          }
+        )
+      }
+    }
 
-module.exports = UsersRepository;
+  // 다른 유저 정보를 보기
+  lookOtherUser = async (nickName) => {
+    const lookOtherUser = await Users.findOne({nickName : nickName})
+    return {
+      img : lookOtherUser.img,
+      nickName : lookOtherUser.nickName,
+      likeGame : lookOtherUser.likeGame,
+      birth : lookOtherUser.birth,
+      gender : lookOtherUser.gender,
+      myPlace : lookOtherUser.myPlace,
+      introduce : lookOtherUser.introduce,
+      visible : lookOtherUser.visible
+    };
+  }  
+};
+
+module.exports = UsersRepository; 

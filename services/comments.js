@@ -1,4 +1,5 @@
-const CommentsRepository = require('../repositories/comments'); 
+const CommentsRepository = require('../repositories/comments');
+const Comments = require("../schema/comments");
 
 class CommentsService {
     commentsRepository = new CommentsRepository();
@@ -10,32 +11,23 @@ class CommentsService {
 
     //게시글 존재 여부 확인
     findOnePost = async (postId) => {
-        try {
-            const findOnePost = await this.commentsRepository.findOnePost({postId});
+        const findOnePost = await this.commentsRepository.findOnePost(postId);
+        if (!findOnePost) {
+            throw new Error("게시글이 없어요!!");
+        } else {
             return findOnePost;
-        } catch (e) {
-            throw new Error("게시글이 없어요!!");   //service단에는 res, req, next 이런거 받는거 없으니까 res.status...이런거 못씀. throw new Error 던지면 cont단으로 들어가서 catch로 빠지는 것.
         }
     }
 
     //신규 댓글
-    createComment = async (postId, userId, nickname, comment) => {
-        const createCommentResult = await this.commentsRepository.createComment(postId, userId, nickname, comment);
+    createComment = async (postId, userId, nickName, comment) => {
+        const createCommentResult = await this.commentsRepository.createComment(postId, userId, nickName, comment);
         return createCommentResult;
     };
 
     //댓글 존재 여부 확인하기, 본인의 댓글 맞는지 확인하기 for update
     findOneComment = async (commentId) => {
         const findOneComment = await this.commentsRepository.findOneComment({commentId});
-        if (!findOneComment) {
-            throw new Error("댓글이 없어요!!");
-        }
-        return findOneComment;
-    }
-
-    //본인의 댓글 맞는지 확인하기 for delete
-    findOneCommentforDelete = async (commentId) => {
-        const findOneComment = await this.commentsRepository.findOneCommentforDelete({commentId});
         if (!findOneComment) {
             throw new Error("댓글이 없어요!!");
         }
@@ -49,9 +41,15 @@ class CommentsService {
         return commentResult;
     };
 
-    //댓글 삭제
-    deleteComment = async (userId, commentId) => {
-        const deletedCommentResult = await this.commentsRepository.deleteComment(userId, commentId);
+    //댓글 존재 여부 확인하기 for delete
+    findOneCommentforDelete = async (commentId) => {
+        const findOneComment = await this.commentsRepository.findOneCommentforDelete(commentId);
+        return findOneComment;
+    }
+
+    //본인 댓글 여부 확인 후 댓글 삭제
+    deleteComment = async (commentId) => {
+        const deletedCommentResult = await this.commentsRepository.deleteComment(commentId);
         // console.log(deletedCommentResult, "service")
         return deletedCommentResult;
     };

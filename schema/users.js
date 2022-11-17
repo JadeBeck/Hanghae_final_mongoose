@@ -6,6 +6,10 @@ const UsersSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  img : {
+    type : String,
+    default : "https://cdn.pixabay.com/photo/2017/09/24/23/38/cat-2783601__340.jpg"
+  },
   nickName: {
     type: String,
   },
@@ -15,7 +19,7 @@ const UsersSchema = new mongoose.Schema({
   address: {
     type: String,
   },
-  likePlace: {
+  myPlace: {
     type: String,
   },
   birth: {
@@ -24,11 +28,21 @@ const UsersSchema = new mongoose.Schema({
   gender: {
     type: String,
   },
-  likeGame: {
-    type: String,
+  visible : {
+    type : Boolean,
+    default : true
   },
-  salt: {
-    type: String,
+  likeGame: {
+    type: Array,
+  },
+  introduce : {
+    type : String,
+  },
+  refresh_token : {
+    type : String,
+  },
+  admin : {
+    type : String,
   },
   createdAt: { 
     type: Date, 

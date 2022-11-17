@@ -5,7 +5,7 @@
     "description": "프론트 분들을 위한 스웨거 입니다.",
     "version": "1.0.0"
   },
-  "host": "localhost:3000",
+  "host": "www.iceflower.shop",
   "basePath": "/",
   "tags": [
     {
@@ -23,10 +23,14 @@
     {
       "name": "댓글API",
       "description": ""
+    },
+    {
+      "name": "채팅API",
+      "description": ""
     }
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "consumes": [
     "application/json"
@@ -46,10 +50,13 @@
             "schema": {
               "type": "object",
               "properties": {
-                "id": {
+                "userId": {
                   "example": "아이디"
                 },
-                "nickname": {
+                "img": {
+                  "example": "이미지"
+                },
+                "nickName": {
                   "example": "닉네임"
                 },
                 "password": {
@@ -61,7 +68,7 @@
                 "address": {
                   "example": "주소"
                 },
-                "likePlace": {
+                "myPlace": {
                   "example": "선호하는지역"
                 },
                 "birth": {
@@ -72,6 +79,9 @@
                 },
                 "likeGame": {
                   "example": "선호하는게임"
+                },
+                "introduce": {
+                  "example" : "자기소개"
                 }
               }
             }
@@ -101,7 +111,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "id": {
+                "userId": {
                   "example": "아이디"
                 },
                 "password": {
@@ -165,7 +175,7 @@
                 "address": {
                   "example": "주소"
                 },
-                "likePlace": {
+                "myPlace": {
                   "example": "선호하는지역"
                 },
                 "birth": {
@@ -176,6 +186,9 @@
                 },
                 "likeGame": {
                   "example": "선호하는게임"
+                },
+                "introduce": {
+                  "example": "자기소개"
                 }
               }
             }
@@ -213,10 +226,87 @@
         }
       }
     },
+    "/users/{userId}": {
+      "put": {
+        "tags": ["회원정보 관련API"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/users/partyReserved": {
+      "get": {
+        "tags": [
+          "회원정보 관련API"
+        ],
+        "description": "참여 예약한 모임",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "참여 예약한 모임 조회 완료!!!"
+          },
+          "404": {
+            "description": "잘못된 경로 요청,,,😅"
+          }
+        }
+      }
+    },
+    "/users/partyGo": {
+      "get": {
+        "tags": [
+          "회원정보 관련API"
+        ],
+        "description": "참여 확정된 모임",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "참여 확정된 모임 조회 완료~!~~!!~"
+          },
+          "404": {
+            "description": "잘못된 경로 요청,,,🥲"
+          }
+        }
+      }
+    },
     "/posts/": {
       "post": {
         "tags": ["게시물API"],
-        "description": "",
+        "description": "게시물 생성",
         "parameters": [
           {
             "name": "authorization",
@@ -268,8 +358,15 @@
       },
       "get": {
         "tags": ["게시물API"],
-        "description": "",
-        "parameters": [],
+        "description": "게시물 전체 조회",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "게시물 조회 완료"
@@ -283,7 +380,7 @@
     "/posts/{postId}": {
       "get": {
         "tags": ["게시물API"],
-        "description": "",
+        "description": "게시물 상세 조회",
         "parameters": [
           {
             "name": "postId",
@@ -303,7 +400,7 @@
       },
       "put": {
         "tags": ["게시물API"],
-        "description": "",
+        "description": "게시물 수정",
         "parameters": [
           {
             "name": "postId",
@@ -361,7 +458,7 @@
       },
       "delete": {
         "tags": ["게시물API"],
-        "description": "",
+        "description": "게시물 삭제",
         "parameters": [
           {
             "name": "postId",
@@ -381,6 +478,213 @@
           },
           "400": {
             "description": "없는 게시물입니다."
+          }
+        }
+      }
+    },    
+    "/posts/participate/{postId}": {
+      "put": {
+        "tags": ["게시물API"],
+        "description": "파티에 참가",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nickName": {
+                  "example": "닉네임 입력"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "게시물 조회 완료"
+          },
+          "400": {
+            "description": "오류"
+          }
+        }
+      }
+    },
+    "/posts/ban/{postId}": {
+      "put": {
+        "tags": ["게시물API"],
+        "description": "게시물에서 강퇴",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nickName": {
+                  "example": "닉네임 입력"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "강퇴 완료"
+          },
+          "400": {
+            "description": "오류"
+          }
+        }
+      }
+    },
+    "/posts/cancelBan/{postId}": {
+      "put": {
+        "tags": ["게시물API"],
+        "description": "게시물에서 강퇴취소",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nickName": {
+                  "example": "닉네임 입력"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "강퇴 취소"
+          },
+          "400": {
+            "description": "오류"
+          }
+        }
+      }
+    },
+    "/posts/closeParty/{postId}": {
+      "put": {
+        "tags": ["게시물API"],
+        "description": "파티원 모집 마감",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "파티원 모집 마감"
+          },
+          "400": {
+            "description": "오류"
+          }
+        }
+      }
+    }, "/posts/reopenParty/{postId}": {
+      "put": {
+        "tags": ["게시물API"],
+        "description": "파티원 모집 리오픈",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "string",
+              "properties": {
+                "time": {
+                  "example": "새로운 마감 시간 입력ㄱㄱ"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "파티원 모집 리오픈"
+          },
+          "400": {
+            "description": "오류"
+          }
+        }
+      }
+    },
+    "/posts/randomPost": {
+      "get": {
+        "tags": [
+          "게시물API"
+        ],
+        "description": "포스트 랜덤 추출(w/ 무한스크롤)",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "포스트 랜덤 추출 완료"
+          },
+          "404": {
+            "description": "잘못된 경로 요청."
           }
         }
       }
@@ -496,6 +800,28 @@
           {
             "name": "authorization",
             "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/chats/{room}": {
+      "get": {
+        "tags": ["채팅API"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "room",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],

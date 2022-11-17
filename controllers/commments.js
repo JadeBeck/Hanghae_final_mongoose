@@ -25,8 +25,7 @@ class CommentsController {
     //신규 댓글!!
     createComment = async (req, res, next) => {
         try {
-            const userId = res.locals.user.userId;
-            const nickname = res.locals.user.nickname;
+            const {userId, nickName} = res.locals.user;
             const {postId} = req.params;
             const {comment} = req.body;
 
@@ -38,7 +37,7 @@ class CommentsController {
                 return;
             }
 
-            const createComment = await this.commentsService.createComment(postId, userId, nickname, comment);
+            const createComment = await this.commentsService.createComment(postId, userId, nickName, comment);
             res.status(201).json({message: '댓글을 등록했어요😚', createComment});
 
         } catch (err) {
@@ -69,7 +68,8 @@ class CommentsController {
             }
 
             const updateComment = await this.commentsService.updateComment(userId, commentId, comment);
-            res.status(200).json(updateComment);
+            const updateCommentData = await this.commentsService.findOneComment(commentId);
+            res.status(200).json(updateCommentData);
 
         } catch (err) {
             const errorMessage = `${req.method} ${req.originalUrl} : ${err.message}`;
@@ -85,14 +85,17 @@ class CommentsController {
             const {userId} = res.locals.user;
             const {commentId} = req.params;
 
-            //댓글 존재 여부 확인하기
+            //댓글 존재 여부 확인하기 for delete
             await this.commentsService.findOneCommentforDelete(commentId);
 
-            //본인의 댓글 맞는지 확인하기 for delete
-            const deleteComment = await this.commentsService.deleteComment(userId, commentId);
-            if (deleteComment.deletedCount === 0) {
+            //본인 댓글 여부 확인 for delete
+            const whoWroteThisComment = await this.commentsService.findOneComment(commentId);
+            if (userId !== whoWroteThisComment.userId) {
                 return res.status(400).json({errorMessage: "댓글 작성자 본인만 삭제할 수 있어요~!"});
             }
+
+            //댓글 삭제
+            const deleteComment = await this.commentsService.deleteComment(commentId);
             res.status(200).json({message: "댓글 삭제 완료!!"})
 
         } catch (err) {

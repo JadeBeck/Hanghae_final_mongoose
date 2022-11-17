@@ -1,29 +1,32 @@
-const UsersRepository = require("../repositories/users");   
-const crypto = require("crypto");
+const UsersRepository = require("../repositories/users");
+const PostsRepository = require("../repositories/posts");
+const bcrypt = require("bcryptjs");
 const CHECK_PASSWORD = /^[a-zA-Z0-9]{4,30}$/;
-const CHECK_ID = /^[a-zA-Z0-9]{9,20}$/;
+const CHECK_ID = /^[a-zA-Z0-9]{4,20}$/;
 
 class UserService {
   // 새 인스턴스 생성
   usersRepository = new UsersRepository();
+  postsRepository = new PostsRepository();
 
   // 회원가입 찾기위한 함수
   signUp = async (
     userId,
+    img,
     nickName,
     password,
     confirm,
     address,
-    likePlace,
+    myPlace,
     birth,
     gender,
-    likeGame
+    likeGame,
+    introduce,
+    admin
   ) => {
     // usersService 안에 있는 findUserAccount 함수를 이용해서 선언
     const isSameId = await this.usersRepository.findUserAccountId(userId);
-    const isSameNickname = await this.usersRepository.findUserAccountNick(
-      nickName
-    );
+    const isSameNickname = await this.usersRepository.findUserAccountNick(nickName);
 
     // 유저 id 중복 검사
     if (isSameId) {
@@ -64,24 +67,23 @@ class UserService {
       err.message = "비밀번호와 확인 비밀번호가 일치하지 않습니다.";
       throw err;
     }
-
-    let salt = crypto.randomBytes(32).toString("base64");
+    const salt = await bcrypt.genSalt(11)
     // 반복 횟수 한번 늘려보자
-    let Password = crypto
-      .pbkdf2Sync(password, salt, 100, 32, "sha512")
-      .toString("base64");
+    password = await bcrypt.hash(password, salt)
 
     // userRepository안에 있는 createAccount 함수를 이용하여 선언 (salt도 넣어야함)
     const createAccountData = await this.usersRepository.signUp(
       userId,
+      img,
       nickName,
-      Password,
+      password,
       address,
-      likePlace,
+      myPlace,
       birth,
       gender,
       likeGame,
-      salt
+      introduce,
+      admin
     );
 
     return createAccountData;
@@ -99,12 +101,9 @@ class UserService {
       throw err;
     }
 
-    let salt = loginData.salt;
-    let Password = crypto
-      .pbkdf2Sync(password, salt, 100, 32, "sha512")
-      .toString("base64");
+    const check = await bcrypt.compare(password, loginData.password)
 
-    if (Password !== loginData.password) {
+    if (!check) {
       const err = new Error(`UserService Error`);
       err.status = 403;
       err.message = "패스워드를 확인해주세요.";
@@ -149,10 +148,11 @@ class UserService {
     password,
     confirm,
     address,
-    likePlace,
+    myPlace,
     birth,
     gender,
-    likeGame
+    likeGame,
+    introduce,
   ) => {
     // 비밀번호 안 적을 경우
     if (!password) {
@@ -176,8 +176,8 @@ class UserService {
       address = findUserAccountId.address
     }
 
-    if(likePlace == "" ) {
-      likePlace = findUserAccountId.likePlace
+    if(myPlace == "" ) {
+      myPlace = findUserAccountId.myPlace
     }
 
     if(birth == "" ) {
@@ -192,26 +192,36 @@ class UserService {
       likeGame = findUserAccountId.likeGame
     }
 
+    if(introduce == "" ) {
+      introduce = findUserAccountId.introduce
+    }
+
     
 
     // 암호화 풀기 위해서 가져옴
     const loginData = await this.usersRepository.login(userId);
 
-    let salt = loginData.salt;
-    let Password = crypto
-      .pbkdf2Sync(password, salt, 100, 32, "sha512")
-      .toString("base64");
+    const check = await bcrypt.compare(password, loginData.password)
+
+    if(!check) {
+      const err = new Error(`UserService Error`);
+      err.status = 403;
+      err.message = "패스워드를 확인해주세요.";
+      throw err;
+    }
 
     const updateUserData = await this.usersRepository.updateUserData(
       userId,
       nickName,
-      Password,
+      password,
       address,
-      likePlace,
+      myPlace,
       birth,
       gender,
-      likeGame
+      likeGame,
+      introduce
     );
+
     return updateUserData;
   };
 
@@ -220,6 +230,30 @@ class UserService {
     const deleteUserData = await this.usersRepository.deleteUserData(nickname);
     return deleteUserData;
   };
+
+  // 회원 성별 공개 여부
+  visibleGender = async (userId) => {
+    const visibleGender = await this.usersRepository.visibleGender(userId);
+    return visibleGender;
+  }
+
+  // 참여 예약한 모임
+  partyReservedData = async(nickName) => {
+    const partyReservedData = await this.postsRepository.partyReservedData(nickName);
+    return partyReservedData;
+  }
+
+  // 참여 확정된 모임
+  partyGoData = async(nickName) => {
+    const partyGoData = await this.postsRepository.partyGoData(nickName);
+    return partyGoData;
+  }
+
+  // 다른 유저 정보를 보기
+  lookOtherUser = async(nickName) => {
+    const lookOtherUser = await this.usersRepository.lookOtherUser(nickName);
+    return lookOtherUser;
+  }
 }
 
-module.exports = UserService;
+module.exports = UserService; 
