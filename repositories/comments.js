@@ -1,4 +1,4 @@
-const Comments = require('../schema/comments'); 
+const Comments = require('../schema/comments');
 const Posts = require('../schema/posts');
 
 class CommentsRepository {
@@ -21,9 +21,9 @@ class CommentsRepository {
     }
 
     //신규 댓글
-    createComment = async (postId, userId, nickName, comment) => {
-        const createCommentData = await Comments.create({ postId, userId, nickName, comment });
-        await Posts.updateOne( { _id: postId},{ $push:{participant: nickName}} );
+    createComment = async (postId, userId, nickName, birth, gender, myPlace, comment) => {
+        const createCommentData = await Comments.create({ postId, userId, nickName, birth, gender, myPlace, comment });
+        await Posts.updateOne( { _id: postId},{ $push:{participant: nickName}});
         return createCommentData;
     };
 
@@ -50,6 +50,12 @@ class CommentsRepository {
         const deleteCommentData = await Comments.deleteOne({_id: commentId});
         return deleteCommentData;
     };
+
+    //참여 예약한 모임 조회
+    partyReservedData = async(nickName) => {
+        const partyReservedData = await Comments.find({nickName}).sort('date');
+        return partyReservedData;
+    }
 }
 
 module.exports = CommentsRepository;

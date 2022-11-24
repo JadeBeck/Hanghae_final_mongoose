@@ -1,36 +1,36 @@
-const Users  = require("../schema/users");  
+const Users  = require("../schema/users");   
 const Posts = require("../schema/posts"); 
 const Comments = require("../schema/comments"); 
+const bookmark = require("../schema/bookmark");
 
 class UsersRepository {
   // 회원가입을 위한 함수
   signUp = async (
     userId,
-    img,
     nickName,
     password,
+    phoneNumber,
     address,
     myPlace,
-    birth,
+    age,
     gender,
     likeGame,
-    introduce,
     admin
   ) => {
     // create로 회원가입
     const createAccountData = await Users.create({
       userId,
-      img,
       nickName,
       password,
+      phoneNumber,
       address,
       myPlace,
-      birth,
+      age,
       gender,
       likeGame,
-      introduce,
       admin
     });
+    await bookmark.create({nickName})
     return createAccountData;
   };
 
@@ -51,10 +51,10 @@ class UsersRepository {
   };
 
   // 유저 정보 조회 by 아이디와 닉네임을 위한 함수
-  findUserAccount = async (userId, nickName) => {
+  findUserAccount = async (userId) => {
     // findOne로 id, nickName 이루어진 정보가 있는지 확인
     const findUserAccountData = await Users.findOne({
-      userId : userId, nickName : nickName,
+      userId : userId
     });
     return findUserAccountData;
   };
@@ -76,17 +76,19 @@ class UsersRepository {
   };
 
   // 회원 정보 확인하기
-  findUserData = async (userId) => {
-    const findUserData = await Users.findOne({userId:userId});
+  findUserData = async (userId, nickName) => {
+    const findUserData = await Users.findOne({userId:userId, nickName});
     return {
-      img : findUserData.img,
+      userId : findUserData.userId,
       nickName : findUserData.nickName,
       likeGame : findUserData.likeGame,
       address : findUserData.address,
-      birth : findUserData.birth,
+      age : findUserData.age,
       gender : findUserData.gender,
       myPlace : findUserData.myPlace,
-      introduce : findUserData.introduce,
+      userAvater : findUserData.userAvater,
+      point : findUserData.point,
+      totalPoint : findUserData.totalPoint,
       visible : findUserData.visible
     };
   };
@@ -95,23 +97,28 @@ class UsersRepository {
   updateUserData = async (
     userId,
     nickName,
-    password,
     address,
     myPlace,
-    birth,
+    age,
     gender,
     likeGame,
-    introduce
+    userAvater,
+    point,
+    totalPoint,
+    visible
   ) => {
     const updateUserData = await Users.updateOne(
       { userId : userId, nickName : nickName },
       {$set:
         {address: address,
         myPlace: myPlace,
-        birth: birth,
+        age: age,
         gender: gender,
         likeGame: likeGame,
-        introduce : introduce}
+        userAvater : userAvater,
+        point: point,
+        totalPoint : totalPoint,
+        visible : visible}
       }
     );
     return updateUserData;
@@ -125,40 +132,32 @@ class UsersRepository {
     return deleteUserData;
   };
 
-  // 회원 성별 공개 여부
-  visibleGender = async (userId) => {
-    const visibleGender = await Users.findOne({userId : userId})
-    if(visibleGender.visible) {
-      await Users.updateOne(
-        {userId : userId},
-        {$set:
-          {visible:false}
-        }
-      )
-      } else {
-        await Users.updateOne(
-          {userId : userId},
-          {$set:
-            {visible:true}
-          }
-        )
-      }
-    }
-
   // 다른 유저 정보를 보기
   lookOtherUser = async (nickName) => {
     const lookOtherUser = await Users.findOne({nickName : nickName})
     return {
-      img : lookOtherUser.img,
       nickName : lookOtherUser.nickName,
       likeGame : lookOtherUser.likeGame,
-      birth : lookOtherUser.birth,
+      age : lookOtherUser.age,
       gender : lookOtherUser.gender,
       myPlace : lookOtherUser.myPlace,
-      introduce : lookOtherUser.introduce,
-      visible : lookOtherUser.visible
+      userAvater : lookOtherUser.userAvater,
+      visible : lookOtherUser.visible,
+      point : lookOtherUser.point,
+      totalPoint : lookOtherUser.totalPoint
     };
   }  
+
+  // 비밀번호 변경
+  changePW = async (userId, password) => {
+    const changePW = await Users.updateOne(
+      { userId : userId},
+      {$set:
+        {password : password}
+      }
+    )
+    return changePW;
+  }
 };
 
 module.exports = UsersRepository; 

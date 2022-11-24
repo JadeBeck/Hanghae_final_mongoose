@@ -1,4 +1,4 @@
-const UsersService = require("../services/users");    
+const UsersService = require("../services/users");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -10,31 +10,29 @@ class UsersController {
     try {
       const {
         userId,
-        img,
         nickName,
         password,
         confirm,
+        phoneNumber,
         address,
         myPlace,
-        birth,
+        age,
         gender,
         likeGame,
-        introduce,
         admin
       } = req.body;
 
       await this.usersService.signUp(
         userId,
-        img,
         nickName,
         password,
         confirm,
+        phoneNumber,
         address,
         myPlace,
-        birth,
+        age,
         gender,
         likeGame,
-        introduce,
         admin
       );
 
@@ -82,7 +80,7 @@ class UsersController {
 
       res.status(201).json({
         accessToken: `Bearer ${accessToken}`,
-        refresh_token: `Bearer ${refresh_token}`,
+        nickName : getNickname.nickName
       });
     } catch (err) {
       res.status(err.status || 400).json({
@@ -95,30 +93,38 @@ class UsersController {
 
   // 회원 정보 찾기
   findUser = async (req, res, next) => {
-    const { userId } = res.locals.user;
-    const findUser = await this.usersService.findUserData(userId);
-    res.status(200).json({ findUser });
+    const { userId, nickName } = res.locals.user;
+    const findUser = await this.usersService.findUserData(userId, nickName);
+
+    //참여 예약한 모임
+    const partyReserved = await this.usersService.partyReservedData(nickName);
+
+    //참여 확정된 모임
+    const partyGo = await this.usersService.partyGoData(nickName);
+
+    res.status(200).json({ findUser, partyReserved, partyGo });
   };
 
   // 회원 정보 변경
   updateUserData = async (req, res, next) => {
     try {
       const { userId, nickName } = res.locals.user;
-      const { password, confirm, address, myPlace, birth, gender, likeGame, introduce } =
+      const { address, myPlace, age, gender, likeGame, userAvater, point, totalPoint, visible } =
         req.body;
       await this.usersService.updateUserData(
         userId,
         nickName,
-        password,
-        confirm,
         address,
         myPlace,
-        birth,
+        age,
         gender,
         likeGame,
-        introduce,
+        userAvater,
+        point,
+        totalPoint,
+        visible,
       );
-      res.status(200).json({ ok: 1, statusCode: 200, message: "수정 완료" });
+      res.status(200).json({ ok: 1, statusCode: 200, message: "수정 완료", visible : visible });
     } catch (err) {
       res.status(err.status || 400).json({
         ok: 0,
@@ -150,32 +156,18 @@ class UsersController {
     res.status(200).json({ updateSocket : updateSocket });
   }
 
-  // 회원 성별 공개 여부
-  visibleGender = async (req, res, next) => {
-    const { userId } = req.params
-    const visibleGender = await this.usersService.visibleGender(userId);
-    res.status(200).json({ messgae : "완료" });
-  }
-
-  // 참여 예약한 모임
-  partyReservedData = async(req, res, next) => {
-    const { nickName } = res.locals.user;
-    const partyReservedData = await this.usersService.partyReservedData(nickName);
-    res.status(200).json({ partyReservedData})
-  };
-
-  // 참여 확정된 모임
-  partyGoData = async(req, res, next) => {
-    const {nickName} = res.locals.user;
-    const partyGoData = await this.usersService.partyGoData(nickName);
-    res.status(200).json({partyGoData})
-  }
-
   // 다른 유저 정보를 보기
   lookOtherUser = async(req, res, next) => {
     const {nickName} = req.params;
     const lookOtherUser = await this.usersService.lookOtherUser(nickName);
     res.status(200).json({lookOtherUser : lookOtherUser})
+  }
+
+  // 비밀번호 변경 하기 위한 것
+  changePW = async(req, res, next) => {
+    const {userId, password} = req.body;
+    const changePW = await this.usersService.changePW(userId, password);
+    res.status(200).json({message : "축하합니다 변경이 완료되었습니다."});
   }
 }
 

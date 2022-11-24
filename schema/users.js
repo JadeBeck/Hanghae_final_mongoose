@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose"); 
 
 const UsersSchema = new mongoose.Schema({
   userId: {
@@ -6,23 +6,22 @@ const UsersSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  img : {
-    type : String,
-    default : "https://cdn.pixabay.com/photo/2017/09/24/23/38/cat-2783601__340.jpg"
-  },
   nickName: {
     type: String,
   },
   password: {
     type: String,
   },
+  phoneNumber : {
+    type : String,
+  },
   address: {
     type: String,
   },
   myPlace: {
-    type: String,
+    type: Array,
   },
-  birth: {
+  age: {
     type: String,
   },
   gender: {
@@ -37,6 +36,18 @@ const UsersSchema = new mongoose.Schema({
   },
   introduce : {
     type : String,
+  },
+  userAvater : {
+    type : Object,
+    default : { Eye : 1, Hair : 1, Mouth : 1, Back : 1 }
+  },
+  point : {
+    type : Number,
+    default : 0
+  },
+  totalPoint : {
+    type : Number,
+    default : 0
   },
   refresh_token : {
     type : String,

@@ -4,15 +4,17 @@ const PostsSchema = new mongoose.Schema({
   userId: {
     type: String,
   },
+  img : {
+    type : String,
+  },
   nickName: {
     type: String,
   },
   title: {
     type: String,
-    index: true
   },
   content: {
-    type: String
+    type: String,
   },
   location: {
     type: Object, String,
@@ -33,6 +35,9 @@ const PostsSchema = new mongoose.Schema({
     type : Number
   },
   participant : {
+    type : Array
+  },
+  confirmMember : {
     type : Array
   },
   banUser : {
@@ -56,5 +61,5 @@ const PostsSchema = new mongoose.Schema({
     expires: 0
   },
 });
-
+// PostsSchema.index({title:'text',content:'text',nickName:'text'});
 module.exports = mongoose.model("Posts", PostsSchema);

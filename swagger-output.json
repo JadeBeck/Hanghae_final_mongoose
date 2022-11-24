@@ -27,6 +27,10 @@
     {
       "name": "채팅API",
       "description": ""
+    },
+    {
+      "name" : "인증번호API",
+      "description" : ""
     }
   ],
   "schemes": [
@@ -53,9 +57,6 @@
                 "userId": {
                   "example": "아이디"
                 },
-                "img": {
-                  "example": "이미지"
-                },
                 "nickName": {
                   "example": "닉네임"
                 },
@@ -71,17 +72,14 @@
                 "myPlace": {
                   "example": "선호하는지역"
                 },
-                "birth": {
-                  "example": "생년월일"
+                "age": {
+                  "example": "나이"
                 },
                 "gender": {
                   "example": "성별"
                 },
                 "likeGame": {
                   "example": "선호하는게임"
-                },
-                "introduce": {
-                  "example" : "자기소개"
                 }
               }
             }
@@ -166,20 +164,14 @@
             "schema": {
               "type": "object",
               "properties": {
-                "password": {
-                  "example": "비밀번호"
-                },
-                "confirm": {
-                  "example": "확인비번"
-                },
                 "address": {
                   "example": "주소"
                 },
                 "myPlace": {
                   "example": "선호하는지역"
                 },
-                "birth": {
-                  "example": "생년월일"
+                "age": {
+                  "example": "나이"
                 },
                 "gender": {
                   "example": "성별"
@@ -187,8 +179,17 @@
                 "likeGame": {
                   "example": "선호하는게임"
                 },
-                "introduce": {
-                  "example": "자기소개"
+                "userAvater": {
+                  "example" : "아바타"
+                },
+                "point" : {
+                  "example" : "포인트"
+                },
+                "totalPoint" : {
+                  "example" : "랭킹을위한포인트"
+                },
+                "visible" : {
+                  "example" : "성별 공개 여부"
                 }
               }
             }
@@ -226,8 +227,8 @@
         }
       }
     },
-    "/users/{userId}": {
-      "put": {
+    "/users/visible/{userId}": {
+      "get": {
         "tags": ["회원정보 관련API"],
         "description": "",
         "parameters": [
@@ -253,52 +254,52 @@
         }
       }
     },
-    "/users/partyReserved": {
+    "/users/{nickName}": {
       "get": {
-        "tags": [
-          "회원정보 관련API"
-        ],
-        "description": "참여 예약한 모임",
+        "tags": ["회원정보 관련API"],
+        "description": "",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
+            "name": "nickName",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
-          "200": {
-            "description": "참여 예약한 모임 조회 완료!!!"
+          "401": {
+            "description": "로그인을 하시기 바랍니다."
           },
-          "404": {
-            "description": "잘못된 경로 요청,,,😅"
+          "403": {
+            "description": "비밀번호 값을 제대로 넣지 않았습니다."
           }
         }
       }
     },
-    "/users/partyGo": {
+    "/users/change/password": {
       "get": {
-        "tags": [
-          "회원정보 관련API"
-        ],
-        "description": "참여 확정된 모임",
+        "tags": ["회원정보 관련API"],
+        "description": "",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
+            "name": "body",
+            "in": "body",
             "schema": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "아이디"
+                },
+                "password": {
+                  "example": "변경할 비밀번호"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "참여 확정된 모임 조회 완료~!~~!!~"
-          },
-          "404": {
-            "description": "잘못된 경로 요청,,,🥲"
+            "description": "비밀번호 변경 완료"
           }
         }
       }
@@ -345,7 +346,7 @@
                 }
               }
             }
-          } 
+          }
         ],
         "responses": {
           "200": {
@@ -481,8 +482,78 @@
           }
         }
       }
-    },    
-    "/posts/participate/{postId}": {
+    },
+    "/posts/searchTitle/{keyword}": {
+      "get": {
+        "tags": ["게시물API"],
+        "description": "게시글 검색 by 제목",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "키워드로 게시글 검색 완료"
+          },
+          "400": {
+            "description": "검색을 연속해서 너무 빨리 하셨거나,,😂 찾으시는 게시물이 없습니다,,!!!"
+          }
+        }
+      }
+    },"/posts/searchNickname/{keyword}": {
+      "get": {
+        "tags": ["게시물API"],
+        "description": "게시글 검색 by 닉네임",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "키워드로 게시글 검색 완료"
+          },
+          "400": {
+            "description": "검색을 연속해서 너무 빨리 하셨거나,,😂 찾으시는 게시물이 없습니다,,!!!"
+          }
+        }
+      }
+    },
+    "/posts/user/{nickName}": {
+      "get": {
+        "tags": ["게시물API"],
+        "description": "유저가 쓴 게시물",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "nickName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "게시물 조회 완료"
+          },
+          "400": {
+            "description": "없는 게시물입니다."
+          }
+        }
+      }
+    },
+    "/posts/confirm/{postId}": {
       "put": {
         "tags": ["게시물API"],
         "description": "파티에 참가",
@@ -513,10 +584,10 @@
         ],
         "responses": {
           "200": {
-            "description": "게시물 조회 완료"
+            "description": "confirm"
           },
           "400": {
-            "description": "오류"
+            "description": "error Message"
           }
         }
       }
@@ -689,6 +760,64 @@
         }
       }
     },
+    "/posts/bookmark/{postId}": {
+      "put": {
+        "tags": [
+          "게시물API"
+        ],
+        "description": "북마크 추가or제거",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "추가되었습니다."
+          },
+          "400": {
+            "description": "error"
+          }
+        }
+      }
+    },
+    "/posts/bookmark/{nickName}": {
+      "get": {
+        "tags": [
+          "게시물API"
+        ],
+        "description": "북마크 조회",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "nickName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 완료."
+          },
+          "400": {
+            "description": "추가한 게시글이 없습니다."
+          }
+        }
+      }
+    },
     "/comments/{postId}": {
       "get": {
         "tags": ["댓글API"],
@@ -831,6 +960,146 @@
           },
           "401": {
             "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/sms/send": {
+      "post": {
+        "tags": ["인증번호API"],
+        "description": "회원가입 시 사용되는 인증번호 보내기",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "phoneNumber": {
+                  "example": "핸드폰 번호"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/sms/verify": {
+      "post": {
+        "tags": ["인증번호API"],
+        "description": "회원가입 및 비밀번호 변경 시 사용되는 인증번호 확인",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "phoneNumber": {
+                  "example": "핸드폰 번호"
+                },
+                "verifyCode": {
+                  "example": "인증 번호"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/sms/sendID": {
+      "post": {
+        "tags": ["인증번호API"],
+        "description": "아이디 찾기 할때 사용되는 인증번호 보내기",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "phoneNumber": {
+                  "example": "휴대폰 번호"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/sms/verifyID": {
+      "post": {
+        "tags": ["인증번호API"],
+        "description": "아이디 찾기 시 받은 인증번호 확인",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "phoneNumber": {
+                  "example": "휴대폰 번호"
+                },
+                "verifyCode": {
+                  "example": "인증번호"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/sms/sendPW": {
+      "post": {
+        "tags": ["인증번호API"],
+        "description": "비밀번호 변경 시 사용되는 인증번호 보내기",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "아이디"
+                },
+                "phoneNumber": {
+                  "example": "휴대폰 번호"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           }
         }
       }
