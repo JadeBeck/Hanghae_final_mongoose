@@ -1,16 +1,23 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema
 
 const CommentsSchema = new mongoose.Schema({
   postId: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'Posts',
+    required: true,
   },
   userId: {
     type: String,
+    required: true,
   },
   nickName: {
     type: String,
   },
-  birth: {
+  userAvatar : {
+    type : Object,
+  },
+  age: {
     type: String,
   },
   gender: {

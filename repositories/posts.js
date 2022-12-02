@@ -1,18 +1,19 @@
 const Posts = require("../schema/posts");
-const bans = require("../schema/ban")
 const Bookmarks = require("../schema/bookmark");
+const Users = require("../schema/users");
 
 class PostsRepository {
 
     createPosts = async (userId, img, nickName, title, content, location, cafe, date, time, map, partyMember, participant, nowToClose) => {
-        await Posts.create({userId, img, nickName, title, content, location, cafe, date, time, map, partyMember, participant, confirmMember:nickName, expireAt: nowToClose
+        const createPosts = await Posts.create({userId, img, nickName, title, content, location, cafe, date, time, map, partyMember, participant, confirmMember:nickName, expireAt: nowToClose
         });
-        return;
+        await Users.updateOne({userId:userId},{$inc:{point:300, totalPoint:300}})
+        return createPosts;
     };
 
    //게시글 검색 by 제목
     searchTitle = async(keyword) => {
-        const searchTitle = await Posts.find( { title: { $regex: keyword, $options: "xi" }}).sort({ createdAt: "desc"});
+        const searchTitle = await Posts.find({ title: { $regex: keyword, $options: "xi" }}).sort({ createdAt: "desc"});
             /*{$or: [
                     { title: { $regex: keyword, $options: "xi"}},  //“x” is to ignore the white space,
                     { nickName: {$regex: keyword, $options: "xi"}}  //“i” is to make it not case-sensitive
@@ -22,18 +23,29 @@ class PostsRepository {
 
     //키워드(닉네임)로 게시글 검색
     searchNickName = async(keyword) => {
-        const searchNickName = await Posts.find( { nickName: { $regex: keyword, $options: "xi" }}).sort({ createdAt: "desc"});
+        const searchNickName = await Posts.find({ nickName: { $regex: keyword, $options: "xi" }}).sort({ createdAt: "desc"});
         return searchNickName
     }
 
     findAllPosts = async(skip, keyword) => {
-        const findAllPosts = await Posts.find({}, undefined, {skip, limit:5}).sort('createdAt');
-        return findAllPosts;
+        const findAllPosts = await Posts.find({}, undefined, {skip, limit:5}).sort('-createdAt')
+        for (let i = 0; i < findAllPosts.length; i++){
+            const userAvatar = await Users.findOne({userId:findAllPosts[i].userId})
+            findAllPosts[i].userAvatar = userAvatar.userAvatar              
+        }
+            return findAllPosts;        
     }
 
     findOnePost = async(postId) => {
         const findOnePosts = await Posts.findOne({_id:postId})
+        const userAvatar = await Users.findOne({userId:findOnePosts.userId})
+        findOnePosts.userAvatar = userAvatar.userAvatar
         return findOnePosts;
+    }
+
+    findPostsByPostIdForBookmark = async(postId) => {
+        const findPostsByPostIdForBookmark = await Posts.find({_id:postId})
+        return  findPostsByPostIdForBookmark
     }
 
     updatePost = async(postId, userId, title, content, location, cafe, date, time, map, partyMember) => {
@@ -72,12 +84,13 @@ class PostsRepository {
 
     banMember = async(postId, nickName) => {
         await Posts.updateOne({_id:postId},{$push:{banUser: nickName}})
-        await Posts.updateOne({_id:postId},{$pull:{participant: nickName}})
+        await Posts.updateOne({_id:postId},{$pull:{confirmMember: nickName}})
         return
     }
 
     cancelBanMember = async(postId, nickName) => {
         await Posts.updateOne({_id:postId},{$pull:{banUser:nickName}})
+        await Posts.updateOne({_id:postId},{$push:{participant: nickName}})
         return
     }
 
@@ -103,8 +116,14 @@ class PostsRepository {
 
     // 참여 확정된 모임 조회
     partyGoData = async(nickName) => {
-        const partyGoData = await Posts.find({participant: nickName}).sort('date');
+        const partyGoData = await Posts.find({confirmMember: nickName}).sort('date');
         return partyGoData;
+    }
+
+    //참여 예약한 모임 조회
+    partyReservedData = async(nickName) => {
+        const partyReservedData = await Posts.find({participant : nickName}).sort('date');
+        return partyReservedData;
     }
 
     findPostsByUser = async(nickName) => {
@@ -112,6 +131,7 @@ class PostsRepository {
         return findPostsByUser
     }
 
+    //북마크
     findBookmark = async(postId, nickName) => {
         const findBookmark = await Bookmarks.findOne({nickName:nickName})
         return findBookmark

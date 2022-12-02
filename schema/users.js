@@ -15,9 +15,6 @@ const UsersSchema = new mongoose.Schema({
   phoneNumber : {
     type : String,
   },
-  address: {
-    type: String,
-  },
   myPlace: {
     type: Array,
   },
@@ -34,10 +31,7 @@ const UsersSchema = new mongoose.Schema({
   likeGame: {
     type: Array,
   },
-  introduce : {
-    type : String,
-  },
-  userAvater : {
+  userAvatar : {
     type : Object,
     default : { Eye : 1, Hair : 1, Mouth : 1, Back : 1 }
   },
@@ -55,14 +49,31 @@ const UsersSchema = new mongoose.Schema({
   admin : {
     type : String,
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+  bookmark: {
+    type: Array,
   },
-  updatedAt: { 
-    type: Date, 
-    default: Date.now 
+  bookmarkData: {
+    type: Array,
   },
-});
+  loginCheck: {
+    type: Boolean,
+    default: true
+  },
+  tutorial : {
+    type : Boolean,
+    default : false,
+  },
+  rank : {
+    type : Number,
+  },
+  createdAt: {
+    type: String,
+    default: Date.now
+  },
+  updatedAt: {
+    type: String,
+    default: Date.now
+  },
+  });
 
 module.exports = mongoose.model("Users", UsersSchema);

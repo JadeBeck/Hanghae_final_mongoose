@@ -26,37 +26,10 @@ module.exports = async (req, res, next) => {
     const myToken = verifyToken(tokenValue);
 
     // 만약 만료가 되었을때
-    if (myToken == "jwt expired") {
+    if (myToken == "jwt expired" || myToken == undefined) {
+      res.status(419).json({message : "access_token_expired", code : 419})
 
-      // accessToken을 디코드
-      const userInfo = jwt.decode(tokenValue, process.env.DB_SECRET_KEY);
-
-      // 디코드 한 값에서 이메일 가져와서 선언
-      const userId = userInfo.userId;
-
-      let refresh_token;
-
-      // DB에 있는 refresh 토큰 찾아오기
-      Users.findOne({ userId : userId}).then((u) => {
-        refresh_token = u.refresh_token;
-
-      // 가지고있는 refreshToken 확인
-      const myRefreshToken = verifyToken(refresh_token);
-
-      // 만약 만료가 되었을때
-      if (myRefreshToken == "jwt expired") {
-        res.send({ errorMessage: "로그인이 필요합니다." });
-      } else {
-        const myNewToken = jwt.sign(
-          { userId: userId },
-          process.env.DB_SECRET_KEY,
-          {
-            expiresIn: "15m",
-          }
-        );
-        res.send({ message: "new access Token", myNewToken : `Bearer ${myNewToken}` });
-        }
-      });
+      
     } else {
       const {userId} = jwt.verify(tokenValue, process.env.DB_SECRET_KEY);
       const user = await Users.findOne({userId : userId})

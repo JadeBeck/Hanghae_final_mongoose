@@ -1,11 +1,21 @@
 const Comments = require('../schema/comments');
 const Posts = require('../schema/posts');
+const Users = require("../schema/users")
 
 class CommentsRepository {
     //댓글 전체 목록 보기
     findAllComments = async (postId) => {
-        const allCommentsData = await Comments.find({postId}).sort({updatedAt: -1});
-        return allCommentsData;
+        const allCommentsData = await Comments
+            .find({postId})
+            .populate('postId', 'banUser')
+            .sort({updatedAt: -1});
+
+        for (let i = 0; i < allCommentsData.length; i++) {
+            const userData = await Users.findOne({userId: allCommentsData[i].userId});
+            allCommentsData[i].userAvatar = userData.userAvatar
+            allCommentsData[i].age = userData.age
+        }
+        return allCommentsData
     };
 
     //댓글 한개 보기
@@ -22,8 +32,9 @@ class CommentsRepository {
 
     //신규 댓글
     createComment = async (postId, userId, nickName, birth, gender, myPlace, comment) => {
-        const createCommentData = await Comments.create({ postId, userId, nickName, birth, gender, myPlace, comment });
-        await Posts.updateOne( { _id: postId},{ $push:{participant: nickName}});
+        const createCommentData = await Comments.create({postId, userId, nickName, birth, gender, myPlace, comment});
+        await Posts.updateOne({_id: postId}, {$push: {participant: nickName}});
+        await Users.updateOne({userId: userId}, {$inc: {point: 100, totalPoint: 100}})
         return createCommentData;
     };
 
@@ -35,13 +46,13 @@ class CommentsRepository {
 
     //댓글 수정
     updateComment = async (userId, commentId, comment) => {
-        const updatedCommentData = await Comments.updateOne({userId,  _id: commentId}, {$set: {comment}});
+        const updatedCommentData = await Comments.updateOne({userId, _id: commentId}, {$set: {comment}});
         return updatedCommentData;
     };
 
     //댓글 존재 여부 확인하기 for delete
     findOneCommentforDelete = async (commentId) => {
-        const findOneComment = await Comments.findOne({ _id: commentId.commentId });
+        const findOneComment = await Comments.findOne({_id: commentId.commentId});
         return findOneComment;
     }
 
@@ -50,12 +61,6 @@ class CommentsRepository {
         const deleteCommentData = await Comments.deleteOne({_id: commentId});
         return deleteCommentData;
     };
-
-    //참여 예약한 모임 조회
-    partyReservedData = async(nickName) => {
-        const partyReservedData = await Comments.find({nickName}).sort('date');
-        return partyReservedData;
-    }
 }
 
 module.exports = CommentsRepository;

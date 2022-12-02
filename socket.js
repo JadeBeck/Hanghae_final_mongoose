@@ -3,7 +3,6 @@ const SocketIO = require("socket.io");
 const connect = require("./schema");
 connect();
 const Room = require("./schema/room");
-const Ban = require("./schema/ban");
 const Posts = require("./schema/posts");
 
 module.exports = (server) => {
@@ -59,7 +58,7 @@ module.exports = (server) => {
       io.to(room).emit("notice", `${nickName}님 이 퇴장 하셨습니다.`);
     });
 
-    // 벤
+    // 벤 -> 다른사람이 강퇴 못하도록 로직을 막기 (transection을 어떻게 챙길수있는지)
     socket.on("ban", async (data) => {
       let { nickName, room } = data;
   
@@ -74,8 +73,6 @@ module.exports = (server) => {
   
         io.emit("banUsers", nickName);
       }
-  
-      await Ban.create({ room: room, banUser: nickName });
       await Posts.updateOne({_id:room},{$push:{banUser: nickName}})
       await Posts.updateOne({_id:room},{$pull:{participant: nickName}})
       const RoomM = await Room.findOne({room : room})

@@ -1,5 +1,6 @@
 const PostsRepository = require("../repositories/posts");
 const Posts = require("../schema/posts")
+const shuffle_array = require("shuffle-array")
 
 class PostsService {
     postsRepository = new PostsRepository();
@@ -11,9 +12,9 @@ class PostsService {
             err.message = "빈칸을 입력해주세요."
             throw err;
         } else {
-            await this.postsRepository.createPosts(userId, img, nickName, title, content, location, cafe, date, time, map, partyMember, participant, nowToClose)
+            const createPosts = await this.postsRepository.createPosts(userId, img, nickName, title, content, location, cafe, date, time, map, partyMember, participant, nowToClose)
+            return createPosts
         }
-        return
     }
 
     //게시글 검색 by 제목
@@ -150,6 +151,7 @@ class PostsService {
         return findPostsByUser
     }
 
+    //북마크
     pushBookmark = async(postId, nickName) => {
         const findBookmark = await this.postsRepository.findBookmark(postId, nickName)
         if(!findBookmark.postId.includes(postId)){
@@ -163,6 +165,7 @@ class PostsService {
     getBookmark = async(nickName) => {
         let result = []
         const getBookmark = await this.postsRepository.getBookmark(nickName);
+        
         const GetBookmark = getBookmark.map((p) => p.postId)
         for (let i = 0; i < GetBookmark.length; i++){
             const AllgetBookmark = await this.postsRepository.AllgetBookmark(GetBookmark[i])
@@ -174,7 +177,6 @@ class PostsService {
             } else if(AllgetBookmark.length !== 0){
                 result.push(AllgetBookmark)
             }
-            console.log(AllgetBookmark.length)
         }
         return result
     }
