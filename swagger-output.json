@@ -231,33 +231,6 @@
         }
       }
     },
-    "/users/visible/{userId}": {
-      "get": {
-        "tags": ["회원정보 관련API"],
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
     "/users/{nickName}": {
       "get": {
         "tags": ["회원정보 관련API"],
@@ -360,6 +333,62 @@
           },
           "400": {
             "description": "error"
+          }
+        }
+      }
+    },
+    "/users/Dup/Id": {
+      "post": {
+        "tags": ["회원 가입 및 로그인API"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "아이디"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "사용 가능한 아이디 입니다."
+          },
+          "403": {
+            "description": "이미 사용중인 아이디 입니다."
+          }
+        }
+      }
+    },
+    "/users/Dup/Nick": {
+      "post": {
+        "tags": ["회원 가입 및 로그인API"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nickName": {
+                  "example": "닉네임"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "사용가능한 닉네임입니다."
+          },
+          "403": {
+            "description": "이미 사용중인 닉네임입니다."
           }
         }
       }

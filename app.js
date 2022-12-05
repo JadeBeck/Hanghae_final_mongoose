@@ -14,8 +14,8 @@ const cors = require("cors");
 const connect = require("./schema");
 connect();
 
-app.use(helmet());
 
+app.use(helmet());
 app.use(express.json());
 app.use(cors({
 origin: '*', // 모든 출처 허용 옵션. true 를 써도 된다.

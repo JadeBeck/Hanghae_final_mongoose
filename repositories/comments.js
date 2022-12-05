@@ -7,7 +7,7 @@ class CommentsRepository {
     findAllComments = async (postId) => {
         const allCommentsData = await Comments
             .find({postId})
-            .populate('postId', 'banUser')
+            .populate('postId')
             .sort({updatedAt: -1});
 
         for (let i = 0; i < allCommentsData.length; i++) {
@@ -35,6 +35,11 @@ class CommentsRepository {
         const createCommentData = await Comments.create({postId, userId, nickName, birth, gender, myPlace, comment});
         await Posts.updateOne({_id: postId}, {$push: {participant: nickName}});
         await Users.updateOne({userId: userId}, {$inc: {point: 100, totalPoint: 100}})
+        const userInfo = await Users.findOne({userId: userId})
+        const userAvatarData = userInfo.userAvatar;
+        const age = userInfo.age;
+        createCommentData["userAvatar"] = userAvatarData;
+        createCommentData["age"] = age;
         return createCommentData;
     };
 

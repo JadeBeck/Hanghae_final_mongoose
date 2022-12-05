@@ -11,7 +11,7 @@ class UsersRepository {
   signUp = async (
     userId, nickName, password, phoneNumber, myPlace, age, gender, likeGame, admin) => {
     // create로 회원가입
-    const createAccountData = await Users.create({userId,nickName,password,phoneNumber,myPlace,age,gender,likeGame,admin,createdAt: date,updatedAt: date
+    const createAccountData = await Users.create({userId,nickName,password,phoneNumber,myPlace,age,gender,likeGame,admin, visible:true, tutorial:false, createdAt: date,updatedAt: date
     });
     await bookmark.create({ nickName });
     return createAccountData;
@@ -130,6 +130,12 @@ class UsersRepository {
     ]);
     return lookOtherUser;
   };
+
+  // 정보 찾기 nick으로
+  findUserNick = async (nickName) => {
+    const findUserNick = await Users.findOne({nickName : nickName})
+    return findUserNick;
+  }
 
   // 비밀번호 변경
   changePW = async (userId, password) => {

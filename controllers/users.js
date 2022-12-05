@@ -1,4 +1,6 @@
-const UsersService = require("../services/users"); 
+const UsersService = require("../services/users");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 class UsersController {
   usersService = new UsersService();
@@ -16,7 +18,7 @@ class UsersController {
         age,
         gender,
         likeGame,
-        admin
+        admin,
       } = req.body;
 
       await this.usersService.signUp(
@@ -81,6 +83,27 @@ class UsersController {
       });
     }
   };
+
+  findDupId = async (req, res, next) => {
+    const { userId } = req.body;
+    try {
+      const findDupId = await this.usersService.findDupId(userId)
+      res.status(201).json({findDupId : findDupId})
+    } catch(err) {
+      res.status(400).json({message : err.message, statusCode : err.status})
+    }
+    
+  }
+
+  findDupNick = async (req, res, next) => {
+    const { nickName } = req.body;
+    try {
+      const findDupNick = await this.usersService.findDupNick(nickName)
+      res.status(201).json({findDupNick : findDupNick})
+    } catch(err) {
+      res.status(400).json({message : err.message, statusCode : err.status})
+    }
+  }
 
   // 회원 정보 찾기
   findUser = async (req, res, next) => {
@@ -153,7 +176,14 @@ class UsersController {
   lookOtherUser = async (req, res, next) => {
     const {nickName} = req.params;
     const lookOtherUser = await this.usersService.lookOtherUser(nickName);
-    res.status(200).json({lookOtherUser: lookOtherUser})
+
+    //참여 예약한 모임
+    const partyReserved = await this.usersService.partyReservedData(nickName);
+
+    //참여 확정된 모임
+    const partyGo = await this.usersService.partyGoData(nickName);
+
+    res.status(200).json({lookOtherUser: lookOtherUser, partyReserved, partyGo})
   }
 
   // 비밀번호 변경 하기 위한 것
@@ -171,18 +201,21 @@ class UsersController {
   }
 
   refreshT = async (req, res, next) => {
-    const {refresh_token} = req.body;
-    const [tokenType, tokenValue] = refresh_token.split(" ");
-    const refreshT = await this.usersService.refreshT(tokenValue);
+    const {refresh_token, nickName} = req.body;
+    // console.log("날아오는 토큰 ", refresh_token)
+    const [tokenType, tokenValue] = await refresh_token.split(" ");
+    // console.log("토큰 분리 ", tokenValue)
 
-    const myRefreshToken = verifyToken(refreshT.refresh_token);
+    const user = await this.usersService.findUserNick(nickName)
 
-    if (myRefreshToken == "jwt expired") {
+    const myRefreshToken = await verifyToken(tokenValue);
+
+    if (myRefreshToken == "jwt expired" || myRefreshToken == null || myRefreshToken == undefined) {
       res.status(420).json({message: "로그인이 필요합니다.", code: 420});
     } else {
-      const accessToken = await this.usersService.accessToken(refreshT.userId)
+      const accessToken = await this.usersService.accessToken(user.userId)
 
-      res.send({accessToken: accessToken})
+      res.status(201).json({accessToken: accessToken})
     }
   }
 
